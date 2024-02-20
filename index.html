@@ -5,16 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canny Wedge Detector</title>
-    <!-- <title>Hello World</title> -->
 
 </head>
 
 <body id="wasm-example">
-    <script type="module">
+    <script type="text/javascript" src="assets/send_image.js"></script>
+
+    <input type="file" onchange="previewFile()" /><br />
+    <img src="" height="200" alt="Image preview" />
+
+    <!-- <script type="module">
         import init from "./pkg/canny_wedge_detector.js";
         init();
-    </script>
-
+    </script> -->
 </body>
 
 </html>

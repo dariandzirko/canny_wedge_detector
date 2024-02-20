@@ -5,6 +5,8 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
+mod canny_edge;
+mod conv2d;
 mod texture;
 
 #[cfg(target_arch = "wasm32")]
