@@ -1,7 +1,7 @@
 use std::vec;
 
 use image::{self, GenericImageView, GrayImage, Luma, Pixel};
-use crate::conv2d::{conv_2d, Kernel};
+use crate::conv_2d::{conv_2d, Kernel};
 
 #[derive(Default, Clone)]
 pub struct PixelGradientInfo {
@@ -177,9 +177,4 @@ pub fn canny_edge_detector(image: &GrayImage) -> GrayImage {
     let double_threshed_image = double_threshhold(&non_maxima_suppressed_image, 25, 75);
 
     return double_threshed_image;
-}
-
-//This will take the result of the above. Maybe will return the vector of biased points that I can use to find the locator marks
-pub fn box_detector(image: &GrayImage) -> Vec<(usize, usize)> {
-    return vec![(0, 0)];
 }
