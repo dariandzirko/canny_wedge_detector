@@ -45,8 +45,10 @@ fn start() -> Result<(), JsValue> {
     context.put_image_data(&rgba_image_data, 2.0 * image.width() as f64, 0.0)?;
 
     let binding = image.to_luma8();
-    let luma_image = binding.as_raw();
-    // let canny_edge_image = canny_edge_detector(&luma_image);
+
+    let canny_edge_image = canny_edge_detector(&binding);
+
+    let luma_image = canny_edge_image.as_raw();
 
     let rgba_luma_image: Vec<u8> = luma_image
         .into_iter()
@@ -61,12 +63,9 @@ fn start() -> Result<(), JsValue> {
     )
     .unwrap();
 
-    context.put_image_data(&luma_image_data, 0.0, image.height() as f64)?;
-    context.put_image_data(
-        &rgba_image_data,
-        image.width() as f64,
-        image.height() as f64,
-    )?;
+    context.put_image_data(&luma_image_data, 0.0, 800.0)?;
+    // context.put_image_data(&luma_image_data, 0.0, image.height() as f64)?;
+    context.put_image_data(&rgba_image_data, 800.0, 800.0)?;
 
     Ok(())
 }

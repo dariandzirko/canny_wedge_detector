@@ -30,11 +30,6 @@ pub struct EdgeLine {
     adjacent2: (i32, i32) //second adjancent pixel in the direction of the edge normal
 }
 
-//Bias here will be promising points that are slightly better than just plain edges
-pub fn finder_mark_location(bias: Vec<(usize, usize)>, image: GrayImage) -> (usize, usize) {
-    return (0, 0);
-}
-
 pub fn gradient_image_content(image: &GrayImage) -> Vec<PixelGradientInfo> {
     let der_x_dir = conv_2d(&Kernel::sobel_x_dir(), image, true);
     let der_y_dir = conv_2d(&Kernel::sobel_y_dir(), image, true);
@@ -165,14 +160,14 @@ pub fn double_threshhold(image: &GrayImage, low_thresh: u8, high_thresh: u8) -> 
 pub fn canny_edge_detector(image: &GrayImage) -> GrayImage {
     //This is incorrect atm because it does not return the same size image
     let smoothed_image = conv_2d(&Kernel::gaussian_2d(4.0), image, true);
-    smoothed_image.save("smoothed_image.png");
+    // smoothed_image.save("smoothed_image.png");
 
     let smoothed_gradient = gradient_image_content(&smoothed_image);
     let (cols, rows) = smoothed_image.dimensions();
 
     let (non_maxima_suppressed_image, mag_gradient_image) = non_maxima_suppression(smoothed_gradient, cols, rows);
-    mag_gradient_image.save("mag_gradient_image.png");
-    non_maxima_suppressed_image.save("non_maxima_img.png");
+    // mag_gradient_image.save("mag_gradient_image.png");
+    // non_maxima_suppressed_image.save("non_maxima_img.png");
     
     let double_threshed_image = double_threshhold(&non_maxima_suppressed_image, 25, 75);
 
