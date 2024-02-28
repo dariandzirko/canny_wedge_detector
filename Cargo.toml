@@ -11,6 +11,8 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+oxidized_image_processing = { git = "https://github.com/dariandzirko/oxidized-image-processing", branch = "main" }
+
 num = "0.4"
 
 js-sys = "0.3.68"

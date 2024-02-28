@@ -1,11 +1,9 @@
-use image::{ImageBuffer, Rgba};
+use image::{imageops::blur, ImageBuffer, Rgba};
+use num::traits::float;
 use wasm_bindgen::{prelude::*, Clamped};
 use web_sys::*;
 
-use crate::canny_edge::canny_edge_detector;
-
-mod canny_edge;
-mod conv_2d;
+use oxidized_image_processing::{self, float_image, helper_ops::conv_2d, kernel::Kernel};
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
@@ -40,18 +38,12 @@ fn start() -> Result<(), JsValue> {
     )
     .unwrap();
 
-    context.put_image_data(&rgba_image_data, 0.0, 0.0)?;
-    context.put_image_data(&rgba_image_data, image.width() as f64, 0.0)?;
-    context.put_image_data(&rgba_image_data, 2.0 * image.width() as f64, 0.0)?;
-
     let binding = image.to_luma8();
 
-    let canny_edge_image = canny_edge_detector(&binding);
+    //Before blur
+    let luma_img = binding.as_raw();
 
-    let luma_image = canny_edge_image.as_raw();
-    // let luma_image = binding.as_raw();
-
-    let rgba_luma_image: Vec<u8> = luma_image
+    let rgba_luma_image: Vec<u8> = luma_img
         .into_iter()
         .map(|pix| [*pix, *pix, *pix, 255])
         .flatten()
@@ -64,22 +56,33 @@ fn start() -> Result<(), JsValue> {
     )
     .unwrap();
 
-    context.put_image_data(&luma_image_data, 0.0, image.height() as f64)?;
-    context.put_image_data(
-        &luma_image_data,
-        image.width() as f64,
-        image.height() as f64,
-    )?;
+    context.put_image_data(&luma_image_data, 0.0, 0.0)?;
 
-    context
-        .put_image_data(&rgba_image_data, 500.0, 500.0)
-        .unwrap();
+    //After blur
+    let mut blurred_float_image = float_image::FloatImage::from_luma8(binding);
+    blurred_float_image.matrix = conv_2d(
+        &mut Kernel::gaussian_2d(5.0).matrix,
+        &blurred_float_image.matrix,
+        true,
+    );
 
-    context.put_image_data(
-        &rgba_image_data,
-        2.0 * image.width() as f64,
-        image.height() as f64,
-    )?;
+    let blurred_binding = blurred_float_image.to_luma8();
+    let blurred_luma_image = blurred_binding.as_raw();
+
+    let blurred_rgba_luma_image: Vec<u8> = blurred_luma_image
+        .into_iter()
+        .map(|pix| [*pix, *pix, *pix, 255])
+        .flatten()
+        .collect();
+
+    let blurred_luma_image_data = ImageData::new_with_u8_clamped_array_and_sh(
+        Clamped(blurred_rgba_luma_image.as_slice()),
+        image.width(),
+        image.height(),
+    )
+    .unwrap();
+
+    context.put_image_data(&blurred_luma_image_data, 0.0, image.height() as f64)?;
 
     Ok(())
 }
