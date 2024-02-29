@@ -15,4 +15,9 @@ function previewFile() {
     if (file) {
         reader.readAsDataURL(file);
     }
+
+    // canvas = document.createElement('canvas');
+    // canvas.width = 1000;
+    // canvas.height = 1000;
+    // canvas.getContext('2d').drawImage(preview, 0, 0);
 }

@@ -5,7 +5,12 @@
 </head>
 
 <body>
-    <!-- Note the usage of `type=module` here as this is an ES6 module -->
+    <script src="assets/send_image.js"></script>
+    <input type="file" onchange="previewFile()" /><br />
+    <img id="img" src="" height="" alt="Image preview" />
+
+    <canvas id="canvas" width="600" height="600" style="border:1px solid grey"></canvas>
+
     <script type="module">
         // Use ES module import syntax to import functionality from the module
         // that we have compiled.
@@ -46,7 +51,13 @@
             await init();
         }
 
-        run();
+        document.getElementById("img").onload = function () {
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            const img = document.getElementById("img");
+            ctx.drawImage(img, 0, 0);
+            run();
+        };  
     </script>
 </body>
 

@@ -1,4 +1,4 @@
-use image::{DynamicImage, ImageBuffer, Rgba};
+use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use wasm_bindgen::{prelude::*, Clamped};
 use web_sys::*;
 
@@ -41,13 +41,26 @@ pub fn put_image_to_canvas(
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document
-        .create_element("canvas")?
-        .dyn_into::<web_sys::HtmlCanvasElement>()?;
-    document.body().unwrap().append_child(&canvas)?;
-    canvas.set_width(800);
-    canvas.set_height(800);
-    canvas.style().set_property("border", "solid")?;
+    // let canvas = document
+    //     .create_element("canvas")?
+    //     .dyn_into::<web_sys::HtmlCanvasElement>()?;
+    // document.body().unwrap().append_child(&canvas)?;
+    // canvas.set_width(800);
+    // canvas.set_height(800);
+    // canvas.style().set_property("border", "solid")?;
+
+    // let context = canvas
+    //     .get_context("2d")
+    //     .unwrap()
+    //     .unwrap()
+    //     .dyn_into::<web_sys::CanvasRenderingContext2d>()
+    //     .unwrap();
+
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas
+        .dyn_into::<web_sys::HtmlCanvasElement>()
+        .map_err(|_| ())
+        .unwrap();
 
     let context = canvas
         .get_context("2d")
@@ -56,20 +69,18 @@ fn start() -> Result<(), JsValue> {
         .dyn_into::<web_sys::CanvasRenderingContext2d>()
         .unwrap();
 
-    pub const IMAGE_BYTES: &[u8] = include_bytes!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/",
-        "happy-tree.png"
-    ));
+    let image = context.get_image_data(0.0, 0.0, 256.0, 256.0).unwrap();
 
-    let image = image::load_from_memory_with_format(&IMAGE_BYTES, image::ImageFormat::Png).unwrap();
+    let clamped_data = image.data();
+    let data = clamped_data.0;
+    let image = RgbaImage::from_vec(256, 256, data).unwrap();
+    let dyn_image = DynamicImage::from(image);
 
-    //Before blur
-    put_image_to_canvas(&image, &context, 0.0, 0.0, true);
-    // put_image_to_canvas(&image, &context, image.width() as f64, 0.0, false);
+    // //Before blur
+    put_image_to_canvas(&dyn_image, &context, 200.0, 200.0, true);
 
     //After blur
-    let binding = image.to_luma8();
+    let binding = dyn_image.to_luma8();
     let mut blurred_float_image = float_image::FloatImage::from_luma8(binding);
     blurred_float_image.matrix = conv_2d(
         &mut Kernel::gaussian_2d(5.0).matrix,
@@ -79,7 +90,7 @@ fn start() -> Result<(), JsValue> {
 
     let blurred_binding = blurred_float_image.to_luma8();
     let dyn_image = DynamicImage::from(blurred_binding);
-    put_image_to_canvas(&dyn_image, &context, 0.0, image.height() as f64, true);
+    put_image_to_canvas(&dyn_image, &context, 250.0, 250.0, true);
 
     Ok(())
 }
