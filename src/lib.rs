@@ -1,8 +1,8 @@
-use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
+use image::{DynamicImage, RgbaImage};
 use wasm_bindgen::{prelude::*, Clamped};
 use web_sys::*;
 
-use oxidized_image_processing::{self, float_image, helper_ops::conv_2d, kernel::Kernel};
+use oxidized_image_processing::{self, canny_edge::canny_edge_detector, float_image};
 
 pub fn put_image_to_canvas(
     image: &DynamicImage,
@@ -41,20 +41,6 @@ pub fn put_image_to_canvas(
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
-    // let canvas = document
-    //     .create_element("canvas")?
-    //     .dyn_into::<web_sys::HtmlCanvasElement>()?;
-    // document.body().unwrap().append_child(&canvas)?;
-    // canvas.set_width(800);
-    // canvas.set_height(800);
-    // canvas.style().set_property("border", "solid")?;
-
-    // let context = canvas
-    //     .get_context("2d")
-    //     .unwrap()
-    //     .unwrap()
-    //     .dyn_into::<web_sys::CanvasRenderingContext2d>()
-    //     .unwrap();
 
     let canvas = document.get_element_by_id("canvas").unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas
@@ -71,26 +57,21 @@ fn start() -> Result<(), JsValue> {
 
     let image = context.get_image_data(0.0, 0.0, 256.0, 256.0).unwrap();
 
+    console::log_1(&"data_1".into());
+
     let clamped_data = image.data();
     let data = clamped_data.0;
     let image = RgbaImage::from_vec(256, 256, data).unwrap();
     let dyn_image = DynamicImage::from(image);
 
-    // //Before blur
-    put_image_to_canvas(&dyn_image, &context, 200.0, 200.0, true);
-
-    //After blur
     let binding = dyn_image.to_luma8();
-    let mut blurred_float_image = float_image::FloatImage::from_luma8(binding);
-    blurred_float_image.matrix = conv_2d(
-        &mut Kernel::gaussian_2d(5.0).matrix,
-        &blurred_float_image.matrix,
-        true,
-    );
+    let float_image = float_image::FloatImage::from_luma8(binding);
+    let canny_matrix = canny_edge_detector(&float_image.matrix);
+    let canny_edge_image = float_image::FloatImage::new(canny_matrix);
 
-    let blurred_binding = blurred_float_image.to_luma8();
-    let dyn_image = DynamicImage::from(blurred_binding);
-    put_image_to_canvas(&dyn_image, &context, 250.0, 250.0, true);
+    let canny_edge_binding = canny_edge_image.to_luma8();
+    let dyn_image_again = DynamicImage::from(canny_edge_binding);
+    put_image_to_canvas(&dyn_image_again, &context, 300.0, 300.0, true);
 
     Ok(())
 }
