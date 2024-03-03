@@ -40,6 +40,8 @@ pub fn put_image_to_canvas(
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
+    console::log_1(&"Hello using web-sys".into());
+
     let document = web_sys::window().unwrap().document().unwrap();
 
     let canvas = document.get_element_by_id("canvas").unwrap();
@@ -57,8 +59,6 @@ fn start() -> Result<(), JsValue> {
 
     let image = context.get_image_data(0.0, 0.0, 256.0, 256.0).unwrap();
 
-    console::log_1(&"data_1".into());
-
     let clamped_data = image.data();
     let data = clamped_data.0;
     let image = RgbaImage::from_vec(256, 256, data).unwrap();
@@ -71,7 +71,7 @@ fn start() -> Result<(), JsValue> {
 
     let canny_edge_binding = canny_edge_image.to_luma8();
     let dyn_image_again = DynamicImage::from(canny_edge_binding);
-    put_image_to_canvas(&dyn_image_again, &context, 300.0, 300.0, true);
+    put_image_to_canvas(&dyn_image_again, &context, 200.0, 200.0, true);
 
     Ok(())
 }
